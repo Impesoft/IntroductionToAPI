@@ -9,7 +9,7 @@ namespace MyFirstApi.Helpers
     {
         public static int CalculateAge(this DateTime date)
         {
-            int age = DateTime.Now.Year - date.Year;
+            int age = (int)((DateTime.Now - date).Days / 365.25);
             return age;
         }
     }
