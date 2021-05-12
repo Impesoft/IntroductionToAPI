@@ -1,33 +1,57 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AutoMapper;
+using MyFirstApi.DTO;
+using MyFirstApi.Repositories;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace MyFirstApi.Services
 {
-    public class AppUserService
+    public class AppUserService : IAppUserService
     {
-        private AppContext _context;
+        private IAppUserRepository _repo;
+        private IMapper _mapper;
 
-        public AppUserService(AppContext context)
+        public AppUserService(IAppUserRepository repo, IMapper mapper)
         {
-            _context = context;
+            // Dependency Injection
+            _mapper = mapper;
+            _repo = repo;
         }
 
         public async Task<List<AppUser>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _repo.GetUsers();
         }
 
         public async Task AddUser(AppUser user)
         {
-            await _context.Users.AddAsync(user);
-            await _context.SaveChangesAsync();
+            await _repo.AddUser(user);
         }
 
         public async Task<AppUser> GetUser(int id)
         {
-            return await _context.Users.FindAsync(id);
+            return await _repo.GetUser(id);
+        }
+
+        public async Task<MemberDto> GetMemberAsync(int id)
+        {
+            // Bad practice. Use Automapper instead
+            //var member = new MemberDto
+            //{
+            //    City = user.City,
+            //    Gender = user.Gender,
+            //    Interests = user.Interests
+            //};
+            AppUser user = await _repo.GetUser(id);
+            MemberDto member = _mapper.Map<MemberDto>(user);
+            return member;
+        }
+
+        public async Task<ICollection<MemberDto>> GetMembersAsync()
+        {
+            List<AppUser> users = await _repo.GetUsers();
+            List<MemberDto> members = _mapper.Map<List<MemberDto>>(users);
+            return members;
         }
     }
 }
